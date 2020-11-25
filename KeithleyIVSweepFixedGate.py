@@ -13,11 +13,11 @@ stepvprime = float(stepv)
 steps = (stopvprime - startvprime) / stepvprime 
 
 # Import PyVisa and choose GPIB Channel 25 as Drain-Source and 26 as Gate
-import visa
+import pyvisa as visa
 rm = visa.ResourceManager()
 rm.list_resources()
 Keithley = rm.open_resource('GPIB0::25::INSTR')
-Keithleygate = rm.open_resource('GPIB0::26::INSTR')
+Keithleygate = rm.open_resource('GPIB1::26::INSTR')
 Keithley.write("*RST")
 Keithleygate.write("*RST")
 Keithley.timeout = 25000
@@ -25,15 +25,17 @@ Keithleygate.timeout = 25000
 
 # Turn off concurrent functions and set sensor to current with fixed voltage
 Keithley.write(":SENS:FUNC:CONC OFF")
+Keithley.write(":ROUT:TERM REAR")
 Keithley.write(":SOUR:FUNC VOLT")
 Keithley.write(":SENS:FUNC 'CURR:DC' ")
 
 # Set
+Keithleygate.write(":ROUT:TERM REAR")
 Keithleygate.write(":SOUR:FUNC VOLT")
 Keithleygate.write(":SOUR:VOLT:MODE FIXED")
 Keithleygate.write(":SOUR:VOLT:RANG 20")
 Keithleygate.write(":SOUR:VOLT:LEV ", gatev)
-Keithleygate.write(":SENS:CURR:PROT 1")
+Keithleygate.write(":SENS:CURR:PROT 10E-3")
 
 # Voltage starting, ending, and spacing values based on input
 Keithley.write(":SOUR:VOLT:STAR ", startv)
@@ -42,7 +44,7 @@ Keithley.write(":SOUR:VOLT:STEP ", stepv)
 Keithley.write(":SOUR:SWE:RANG AUTO")
 
 # Set compliance current (in A), sweep direction, and data acquisition
-Keithley.write(":SENS:CURR:PROT 1")
+Keithley.write(":SENS:CURR:PROT 10E-3")
 Keithley.write(":SOUR:SWE:SPAC LIN")
 Keithley.write(":SOUR:SWE:POIN ", str(int(steps)))
 Keithley.write(":SOUR:SWE:DIR UP")

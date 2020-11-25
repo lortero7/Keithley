@@ -12,15 +12,17 @@ stepvprime = float(stepv)
 steps = (stopvprime - startvprime) / stepvprime 
 
 # Import PyVisa and choose GPIB Channel 25 as Drain-Source
-import visa
+import pyvisa as visa
 rm = visa.ResourceManager()
 rm.list_resources()
 Keithley = rm.open_resource('GPIB0::25::INSTR')
+#Keithley = rm.open_resource('GPIB1::26::INSTR')
 Keithley.write("*RST")
 Keithley.timeout = 25000
 
 # Turn off concurrent functions and set sensor to current with fixed voltage
 Keithley.write(":SENS:FUNC:CONC OFF")
+Keithley.write(":ROUT:TERM REAR")
 Keithley.write(":SOUR:FUNC VOLT")
 Keithley.write(":SENS:FUNC 'CURR:DC' ")
 
