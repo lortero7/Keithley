@@ -1,0 +1,10 @@
+List of all the require programs, drivers and packages required for the succesful communication and control of the Keithley 2400 Duo in order to conduct Semiconductor mobility measurements.
+
+    1. python installation and the following packages
+        a. pyvisa
+        b. scipy
+        c. matplotlib
+        d. numpy
+    2. git installation
+    3. NI GBIP driver??
+    4. 
