@@ -6,6 +6,7 @@ startv = sys.argv[1]
 stopv = sys.argv[2]
 stepv = sys.argv[3]
 filename = sys.argv[4]
+instr = sys.argv[5]
 startvprime = float(startv)
 stopvprime = float(stopv)
 stepvprime = float(stepv)
@@ -15,8 +16,15 @@ steps = (stopvprime - startvprime) / stepvprime
 import pyvisa as visa
 rm = visa.ResourceManager()
 rm.list_resources()
-Keithley = rm.open_resource('GPIB0::25::INSTR')
-#Keithley = rm.open_resource('GPIB1::26::INSTR')
+
+if instr == 'gate':
+    Keithley = rm.open_resource('GPIB0::26::INSTR')
+else:
+    if instr == 'source':
+        Keithley = rm.open_resource('GPIB0::25::INSTR')
+    else:
+        print('please select an instrument: gate or source')
+    
 Keithley.write("*RST")
 Keithley.timeout = 25000
 
@@ -67,3 +75,4 @@ plt.ylabel(' Drain-Source Current (A)')
 plt.title('IV Curve')
 plt.show()
 np.savetxt(filename, (xvalues,yvalues)) 
+print(len(yvalues))
