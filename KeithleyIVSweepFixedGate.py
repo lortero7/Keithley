@@ -2,11 +2,13 @@
 
 # Variable intake and assignment
 import sys
+import os
 startv = sys.argv[1]
 stopv = sys.argv[2]
 stepv = sys.argv[3]
 fixedv = sys.argv[4]
 filename = sys.argv[5]
+direction = sys.argv[6]
 startvprime = float(startv)
 stopvprime = float(stopv)
 stepvprime = float(stepv)
@@ -42,9 +44,9 @@ Keithley.write(":SOUR:VOLT:MODE FIXED")
 # set keithley and gate keithey parameters: fixed voltage, compliance current (in A), and data aquisition
 Keithley.write(":SOUR:VOLT:LEV ", fixedv)
 Keithley.write(":TRIG:COUN ", str(int(steps))) # this tells the measurement to be done at every step on the sweep
-Keithley.write(":SENS:CURR:PROT 10E-3")
+Keithley.write(":SENS:CURR:PROT 10E-1")
 Keithley.write(":FORM:ELEM CURR")
-Keithleygate.write(":SENS:CURR:PROT 10E-3")
+Keithleygate.write(":SENS:CURR:PROT 10E-1")
 Keithleygate.write(":FORM:ELEM CURR")
 
 
@@ -55,7 +57,10 @@ Keithleygate.write(":SOUR:VOLT:STEP ", stepv)
 Keithleygate.write(":SOUR:SWE:RANG AUTO")
 Keithleygate.write(":SOUR:SWE:SPAC LIN")
 Keithleygate.write(":SOUR:SWE:POIN ", str(int(steps)))
-Keithleygate.write(":SOUR:SWE:DIR UP")
+if direction == 'down':
+    Keithleygate.write(":SOUR:SWE:DIR DOWN")
+else:
+    Keithleygate.write(":SOUR:SWE:DIR UP")
 Keithleygate.write(":TRIG:COUN ", str(int(steps)))
 
 
@@ -67,8 +72,8 @@ Keithleygate.write(":ARM:SOUR BUS")
 Keithley.write(":INIT")
 Keithleygate.write(":INIT")
 intfc.group_execute_trigger(Keithley, Keithleygate)
-yvalues = Keithley.query_ascii_values(":FETC?")
-yvaluesgate = Keithleygate.query_ascii_values(":FETC?")
+yvaluesgate = Keithley.query_ascii_values(":FETC?")
+yvalues = Keithleygate.query_ascii_values(":FETC?")
 Keithleygate.write(":OUTP OFF")
 Keithley.write(":OUTP OFF")
 Keithleygate.write(":SOUR:VOLT 0")
@@ -81,16 +86,16 @@ from scipy import stats
 
 # Create xvalues array and calculate conductance
 xvalues = np.arange(startvprime,stopvprime,stepvprime)
+if direction == 'down':
+    xvalues = np.flip(xvalues)
 #slope, intercept, r_value, p_value, std_error = stats.linregress(xvalues, yvalues)
 
 # Plot values and output conductance to command line
 #print("Conductance:", slope, "Siemens")
-plt.plot(xvalues,yvalues, label = 'gate')
-plt.plot(xvalues,yvaluesgate, label = 'drain')
-plt.legend(loc = 'center right')
-plt.xlabel(' Gate Voltage (V)')
+plt.plot(xvalues,yvalues)
+plt.xlabel(' Drain Voltage (V)')
 plt.ylabel(' Drain-Source Current (A)')
-plt.title('Gate Sweep')
-plt.figtext(0.7, 0.2, 'Vds=' + str(fixedv) + 'V', fontsize=15)
+plt.title('IV Sweep')
+plt.figtext(0.7, 0.2, 'Vg=' + str(fixedv) + 'V', fontsize=15)
 plt.show()
-np.savetxt(filename, (xvalues,yvalues,yvaluesgate)) 
+np.savetxt(os.getcwd() + '/data/' + filename, (xvalues,yvalues,yvaluesgate)) 
