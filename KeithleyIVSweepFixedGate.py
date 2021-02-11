@@ -3,6 +3,10 @@
 # Variable intake and assignment
 import sys
 import os
+import pyvisa as visa
+import matplotlib.pyplot as plt
+import numpy as np
+
 startv = sys.argv[1]
 stopv = sys.argv[2]
 stepv = sys.argv[3]
@@ -15,7 +19,6 @@ stepvprime = float(stepv)
 steps = (stopvprime - startvprime) / stepvprime 
 
 # Import PyVisa and choose GPIB Channel 25 as Drain-Source and 26 as Gate
-import pyvisa as visa
 rm = visa.ResourceManager()
 rm.list_resources()
 Keithley = rm.open_resource('GPIB0::26::INSTR')
@@ -78,11 +81,6 @@ Keithleygate.write(":OUTP OFF")
 Keithley.write(":OUTP OFF")
 Keithleygate.write(":SOUR:VOLT 0")
 Keithley.write(":SOUR:VOLT 0")
-
-# Import Pyplot, NumPy, and SciPy
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy import stats
 
 # Create xvalues array and calculate conductance
 xvalues = np.arange(startvprime,stopvprime,stepvprime)
