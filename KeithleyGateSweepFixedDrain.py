@@ -1,12 +1,13 @@
 # Keithley Gate Sweep (for fixed Vds) for 2400 SourceMeter
 
-# Variable intake and assignment
+# Import Required Packages
 import sys
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvisa as visa
 
+# Variable intake and assignment
 startv = sys.argv[1]
 stopv = sys.argv[2]
 stepv = sys.argv[3]
@@ -18,12 +19,14 @@ stopvprime = float(stopv)
 stepvprime = float(stepv)
 steps = (stopvprime - startvprime) / stepvprime 
 
-# Import PyVisa and choose GPIB Channel 25 as Drain-Source and 26 as Gate
+# Choose GPIB Channel 25 as Drain-Source and 26 as Gate, as well as interface resource for group trigger
 rm = visa.ResourceManager()
 rm.list_resources()
 Keithley = rm.open_resource('GPIB0::25::INSTR')
 Keithleygate = rm.open_resource('GPIB0::26::INSTR')
 intfc = rm.open_resource('GPIB0::INTFC')
+
+# Initial Communication with instruments and setting data transfer timne limit
 Keithley.write("*RST")
 Keithleygate.write("*RST")
 Keithley.timeout = 25000
@@ -67,7 +70,7 @@ else:
 Keithleygate.write(":TRIG:COUN ", str(int(steps)))
 
 
-# Initiate sweep, collect ACSII current values, and turn output off
+# Turn output on, set up group trigger, and execute sweep, collecting ACSII current values
 Keithley.write(":OUTP ON")
 Keithleygate.write(":OUTP ON")
 Keithley.write(":ARM:SOUR BUS")
@@ -77,18 +80,19 @@ Keithleygate.write(":INIT")
 intfc.group_execute_trigger(Keithley, Keithleygate)
 yvalues = Keithley.query_ascii_values(":FETC?")
 yvaluesgate = Keithleygate.query_ascii_values(":FETC?")
+
+# turn output off
 Keithleygate.write(":OUTP OFF")
 Keithley.write(":OUTP OFF")
 Keithleygate.write(":SOUR:VOLT 0")
 Keithley.write(":SOUR:VOLT 0")
 
-# Create xvalues array and calculate conductance
+# Create xvalues array
 xvalues = np.arange(startvprime,stopvprime,stepvprime)
 if direction == 'down':
     xvalues = np.flip(xvalues)
 
-# Plot values and output conductance to command line
-#print("Conductance:", slope, "Siemens")
+# Plot values and save output to data folder in home directory
 plt.plot(xvalues,yvalues)
 plt.xlabel(' Gate Voltage (V)')
 plt.ylabel(' Drain-Source Current (A)')

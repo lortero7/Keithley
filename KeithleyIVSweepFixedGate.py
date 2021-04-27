@@ -1,12 +1,13 @@
 # Keithley Gate Sweep (for fixed Vds) for 2400 SourceMeter
 
-# Variable intake and assignment
+# importing required packages
 import sys
 import os
 import pyvisa as visa
 import matplotlib.pyplot as plt
 import numpy as np
 
+# variable intake and assignment
 startv = sys.argv[1]
 stopv = sys.argv[2]
 stepv = sys.argv[3]
@@ -18,12 +19,14 @@ stopvprime = float(stopv)
 stepvprime = float(stepv)
 steps = (stopvprime - startvprime) / stepvprime 
 
-# Import PyVisa and choose GPIB Channel 25 as Drain-Source and 26 as Gate
+# choose GPIB Channel 25 as Drain-Source and 26 as Gate, also creates a group resource for concurrent triggering
 rm = visa.ResourceManager()
 rm.list_resources()
 Keithley = rm.open_resource('GPIB0::26::INSTR')
 Keithleygate = rm.open_resource('GPIB0::25::INSTR')
 intfc = rm.open_resource('GPIB0::INTFC')
+
+#first communication with instruments and setting time limit on data transfer
 Keithley.write("*RST")
 Keithleygate.write("*RST")
 Keithley.timeout = 25000
@@ -36,7 +39,7 @@ Keithleygate.write(":SOUR:FUNC VOLT")
 Keithleygate.write(":SENS:FUNC 'CURR:DC' ")
 Keithleygate.write(":SOUR:VOLT:MODE SWE")
 
-# turn off concurrent functions and set keithley to measure current and source fixed voltage
+# turn off concurrent functions and set source keithley to measure current and source fixed voltage
 Keithley.write(":SENS:FUNC:CONC OFF")
 Keithley.write(":ROUT:TERM REAR")
 Keithley.write(":SOUR:FUNC VOLT")
@@ -66,8 +69,7 @@ else:
     Keithleygate.write(":SOUR:SWE:DIR UP")
 Keithleygate.write(":TRIG:COUN ", str(int(steps)))
 
-
-# Initiate sweep, collect ACSII current values, and turn output off
+# Turn output on, set up group trigger, and execute sweep, collecting ACSII current values
 Keithley.write(":OUTP ON")
 Keithleygate.write(":OUTP ON")
 Keithley.write(":ARM:SOUR BUS")
@@ -77,19 +79,19 @@ Keithleygate.write(":INIT")
 intfc.group_execute_trigger(Keithley, Keithleygate)
 yvaluesgate = Keithley.query_ascii_values(":FETC?")
 yvalues = Keithleygate.query_ascii_values(":FETC?")
+
+# turn output off
 Keithleygate.write(":OUTP OFF")
 Keithley.write(":OUTP OFF")
 Keithleygate.write(":SOUR:VOLT 0")
 Keithley.write(":SOUR:VOLT 0")
 
-# Create xvalues array and calculate conductance
+# Create xvalues array
 xvalues = np.arange(startvprime,stopvprime,stepvprime)
 if direction == 'down':
     xvalues = np.flip(xvalues)
-#slope, intercept, r_value, p_value, std_error = stats.linregress(xvalues, yvalues)
 
-# Plot values and output conductance to command line
-#print("Conductance:", slope, "Siemens")
+# Plot values and save them to data folder in parent directory
 plt.plot(xvalues,yvalues)
 plt.xlabel(' Drain Voltage (V)')
 plt.ylabel(' Drain-Source Current (A)')
