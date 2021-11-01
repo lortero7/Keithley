@@ -1,0 +1,26 @@
+List of all the require programs, drivers and packages required for the succesful communication and control of the Keithley 2400 Duo in order to conduct Semiconductor mobility measurements.
+
+    1. python installation and the following packages. These are easily installed with "pip install package"
+        a. pyvisa
+        b. scipy
+        c. matplotlib
+        d. numpy
+    2. git installation this is another installation not strictly required, but helpful. 
+    3. VISA implementation at this website: https://www.ni.com/en-us/support/downloads/drivers/download.ni-visa.html#346210
+    4. NI GBIP driver, link: https://www.ni.com/en-us/support/downloads/drivers/download.ni-488-2.html#345631
+    
+### Design for automated characteristic curves capture!
+
+The system should take a simple input involving the material and the particular information about the transitor fabrication including:
+
+    1. active layer thickness
+    2. channel size (shouldnt change)
+    3. Self-assembled monoalyer material
+    4. annealing time and temperature
+    5. Casting solvent
+    
+The system should take in these variables, and then initialize a program that generates the requireed curves and saves them in a folder along with a text file that contains the transistor information. The raw data will sit in .txt files titled only by the number of trial and the type of curve that it is, along with voltage parameters. The anakysis will be performed with another program. 
+
+### triggering
+
+Upon entering the information and initializing the system, each curve is triggered externally somehow, and terminated with a command!

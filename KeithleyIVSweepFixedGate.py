@@ -98,4 +98,9 @@ plt.ylabel(' Drain-Source Current (A)')
 plt.title('IV Sweep')
 plt.figtext(0.7, 0.2, 'Vg=' + str(fixedv) + 'V', fontsize=15)
 plt.show()
-np.savetxt(os.getcwd() + '/data/' + filename, (xvalues,yvalues,yvaluesgate)) 
+if os.path.isfile(os.getcwd() + '/data/') is True:
+    np.savetxt(os.getcwd() + '/data/' + filename, (xvalues,yvalues,yvaluesgate)) 
+else:
+    os.mkdir('data')
+    np.savetxt(os.getcwd() + '/data/' + filename, (xvalues,yvalues,yvaluesgate)) 
+
